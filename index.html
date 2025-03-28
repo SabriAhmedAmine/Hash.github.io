@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elegant Hash Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #7209b7;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --border-radius: 8px;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-header {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            border-bottom: none;
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .algorithm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .algorithm-check {
+            background-color: var(--light);
+            border-radius: var(--border-radius);
+            padding: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .algorithm-check:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+        
+        .algorithm-check.selected {
+            background-color: rgba(67, 97, 238, 0.2);
+            border: 1px solid var(--primary);
+        }
+        
+        .hash-result {
+            background-color: var(--light);
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .hash-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .hash-content {
+            padding: 1rem;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .copy-btn {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .copy-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        
+        .input-counter {
+            color: #6c757d;
+            font-size: 0.875rem;
+            text-align: right;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h3 class="mb-0"><i class="fas fa-fingerprint me-2"></i>Elegant Hash Generator</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="hash-form">
+                            <div class="mb-4">
+                                <label for="input-text" class="form-label fw-bold">Input Text</label>
+                                <textarea class="form-control" id="input-text" rows="4" placeholder="Enter text to hash..."></textarea>
+                                <div class="input-counter mt-1" id="char-counter">0 characters</div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Select Hashing Algorithms</label>
+                                <div class="algorithm-grid" id="algorithm-container">
+                                    <!-- Algorithms will be inserted here -->
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mb-2">
+                                <button type="button" class="btn btn-outline-secondary" id="select-all-btn">Select All</button>
+                                <button type="button" class="btn btn-outline-secondary" id="deselect-all-btn">Deselect All</button>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary" id="generate-btn">
+                                    <i class="fas fa-bolt me-2"></i>Generate Hashes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-key me-2"></i>Hash Results</h4>
+                    </div>
+                    <div class="card-body" id="results-container">
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-arrow-up fa-2x mb-3"></i>
+                            <p>Enter your text and select algorithms to generate hashes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast-container"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <script>
+        // Advanced hashing algorithms definition
+        const algorithms = [
+            { id: 'md5', name: 'MD5', implementation: (text) => CryptoJS.MD5(text).toString() },
+            { id: 'sha1', name: 'SHA-1', implementation: (text) => CryptoJS.SHA1(text).toString() },
+            { id: 'sha256', name: 'SHA-256', implementation: (text) => CryptoJS.SHA256(text).toString() },
+            { id: 'sha512', name: 'SHA-512', implementation: (text) => CryptoJS.SHA512(text).toString() },
+            { id: 'sha3', name: 'SHA-3', implementation: (text) => CryptoJS.SHA3(text).toString() },
+            { id: 'ripemd160', name: 'RIPEMD-160', implementation: (text) => CryptoJS.RIPEMD160(text).toString() },
+            { id: 'hmac-md5', name: 'HMAC-MD5', implementation: (text) => CryptoJS.HmacMD5(text, "secret").toString() },
+            { id: 'hmac-sha1', name: 'HMAC-SHA1', implementation: (text) => CryptoJS.HmacSHA1(text, "secret").toString() },
+            { id: 'hmac-sha256', name: 'HMAC-SHA256', implementation: (text) => CryptoJS.HmacSHA256(text, "secret").toString() },
+            { id: 'hmac-sha512', name: 'HMAC-SHA512', implementation: (text) => CryptoJS.HmacSHA512(text, "secret").toString() },
+            { id: 'pbkdf2', name: 'PBKDF2', implementation: (text) => CryptoJS.PBKDF2(text, CryptoJS.lib.WordArray.random(128/8), { keySize: 512/32, iterations: 1000 }).toString() },
+            { id: 'aes', name: 'AES (Base64)', implementation: (text) => CryptoJS.AES.encrypt(text, "secret").toString() },
+            { id: 'triple-des', name: 'Triple DES', implementation: (text) => CryptoJS.TripleDES.encrypt(text, "secret").toString() },
+            { id: 'rabbit', name: 'Rabbit', implementation: (text) => CryptoJS.Rabbit.encrypt(text, "secret").toString() },
+            { id: 'rc4', name: 'RC4', implementation: (text) => CryptoJS.RC4.encrypt(text, "secret").toString() },
+            { 
+                id: 'bcrypt-simulation', 
+                name: 'Bcrypt (Simulated)', 
+                implementation: (text) => {
+                    // Simplified bcrypt simulation (not actual bcrypt)
+                    const salt = CryptoJS.lib.WordArray.random(16).toString();
+                    return CryptoJS.SHA512(salt + text + "bcrypt-cost-10").toString();
+                }
+            },
+            { 
+                id: 'scrypt-simulation', 
+                name: 'Scrypt (Simulated)', 
+                implementation: (text) => {
+                    // Simplified scrypt simulation (not actual scrypt)
+                    const salt = CryptoJS.lib.WordArray.random(16).toString();
+                    return CryptoJS.SHA512(CryptoJS.PBKDF2(text, salt, { keySize: 512/32, iterations: 1000 }).toString()).toString();
+                }
+            },
+            { 
+                id: 'argon2-simulation', 
+                name: 'Argon2 (Simulated)', 
+                implementation: (text) => {
+                    // Simplified argon2 simulation (not actual argon2)
+                    const salt = CryptoJS.lib.WordArray.random(16).toString();
+                    const memory = CryptoJS.SHA256(text).toString();
+                    return CryptoJS.SHA512(salt + memory + text + "argon2id").toString();
+                }
+            },
+            { 
+                id: 'custom-double-hash', 
+                name: 'Double Hash', 
+                implementation: (text) => {
+                    return CryptoJS.SHA256(CryptoJS.SHA512(text).toString()).toString();
+                }
+            },
+            { 
+                id: 'custom-salted-hash', 
+                name: 'Salted Hash', 
+                implementation: (text) => {
+                    const salt = CryptoJS.lib.WordArray.random(16).toString();
+                    return salt + ':' + CryptoJS.SHA256(salt + text).toString();
+                }
+            }
+        ];
+        
+        // Create algorithm checkboxes
+        function renderAlgorithms() {
+            const container = document.getElementById('algorithm-container');
+            
+            algorithms.forEach(algo => {
+                const div = document.createElement('div');
+                div.className = 'algorithm-check';
+                div.dataset.id = algo.id;
+                
+                div.innerHTML = `
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="${algo.id}" name="algorithms">
+                        <label class="form-check-label" for="${algo.id}">${algo.name}</label>
+                    </div>
+                `;
+                
+                div.addEventListener('click', (e) => {
+                    if (e.target.tagName !== 'INPUT') {
+                        const checkbox = div.querySelector('input');
+                        checkbox.checked = !checkbox.checked;
+                        updateSelectedClass(div, checkbox.checked);
+                    } else {
+                        updateSelectedClass(div, e.target.checked);
+                    }
+                });
+                
+                container.appendChild(div);
+            });
+        }
+        
+        // Update selected class for algorithm checkboxes
+        function updateSelectedClass(element, isSelected) {
+            if (isSelected) {
+                element.classList.add('selected');
+            } else {
+                element.classList.remove('selected');
+            }
+        }
+        
+        // Generate hashes
+        function generateHashes(text) {
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '';
+            
+            const selectedAlgorithms = [];
+            document.querySelectorAll('input[name="algorithms"]:checked').forEach(checkbox => {
+                const algoId = checkbox.id;
+                selectedAlgorithms.push(algorithms.find(a => a.id === algoId));
+            });
+            
+            if (selectedAlgorithms.length === 0) {
+                showToast('Please select at least one hashing algorithm', 'warning');
+                return;
+            }
+            
+            if (!text.trim()) {
+                showToast('Please enter text to hash', 'warning');
+                return;
+            }
+            
+            // Loading state
+            selectedAlgorithms.forEach(algo => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'hash-result loading';
+                resultDiv.innerHTML = `
+                    <div class="hash-header">
+                        <span>${algo.name}</span>
+                    </div>
+                    <div class="hash-content">
+                        <div class="placeholder-glow">
+                            <span class="placeholder col-12"></span>
+                        </div>
+                    </div>
+                `;
+                resultsContainer.appendChild(resultDiv);
+            });
+            
+            // Process hashes with a slight delay to show loading state
+            setTimeout(() => {
+                resultsContainer.innerHTML = '';
+                
+                selectedAlgorithms.forEach(algo => {
+                    try {
+                        const hash = algo.implementation(text);
+                        
+                        const resultDiv = document.createElement('div');
+                        resultDiv.className = 'hash-result';
+                        resultDiv.innerHTML = `
+                            <div class="hash-header">
+                                <span>${algo.name}</span>
+                                <i class="fas fa-copy copy-btn" title="Copy to clipboard"></i>
+                            </div>
+                            <div class="hash-content">${hash}</div>
+                        `;
+                        
+                        const copyBtn = resultDiv.querySelector('.copy-btn');
+                        copyBtn.addEventListener('click', () => {
+                            const hashText = resultDiv.querySelector('.hash-content').textContent;
+                            navigator.clipboard.writeText(hashText)
+                                .then(() => showToast(`${algo.name} hash copied to clipboard`, 'success'))
+                                .catch(() => showToast('Failed to copy to clipboard', 'danger'));
+                        });
+                        
+                        resultsContainer.appendChild(resultDiv);
+                    } catch (error) {
+                        const resultDiv = document.createElement('div');
+                        resultDiv.className = 'hash-result';
+                        resultDiv.innerHTML = `
+                            <div class="hash-header bg-danger">
+                                <span>${algo.name}</span>
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="hash-content text-danger">Error generating hash: ${error.message}</div>
+                        `;
+                        
+                        resultsContainer.appendChild(resultDiv);
+                    }
+                });
+            }, 500);
+        }
+        
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toastContainer = document.querySelector('.toast-container');
+            
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast, {
+                animation: true,
+                autohide: true,
+                delay: 3000
+            });
+            
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+        
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render algorithm checkboxes
+            renderAlgorithms();
+            
+            // Form submission
+            const form = document.getElementById('hash-form');
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const inputText = document.getElementById('input-text').value;
+                generateHashes(inputText);
+            });
+            
+            // Character counter
+            const inputText = document.getElementById('input-text');
+            const charCounter = document.getElementById('char-counter');
+            
+            inputText.addEventListener('input', () => {
+                const count = inputText.value.length;
+                charCounter.textContent = count === 1 ? '1 character' : `${count} characters`;
+            });
+            
+            // Select/Deselect All buttons
+            document.getElementById('select-all-btn').addEventListener('click', () => {
+                document.querySelectorAll('input[name="algorithms"]').forEach(checkbox => {
+                    checkbox.checked = true;
+                    updateSelectedClass(checkbox.closest('.algorithm-check'), true);
+                });
+            });
+            
+            document.getElementById('deselect-all-btn').addEventListener('click', () => {
+                document.querySelectorAll('input[name="algorithms"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                    updateSelectedClass(checkbox.closest('.algorithm-check'), false);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
