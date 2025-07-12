@@ -1,8 +1,6 @@
-# 🔐 Elegant Hash Generator
+# 🔐 Hash Generator
 
 **Elegant Hash Generator** is a sleek and responsive web application that allows you to generate cryptographic hashes and encrypted outputs from input text using multiple well-known algorithms. Built with HTML, CSS (Bootstrap), and JavaScript, it supports over 20 hashing and encryption methods with a polished UI and intuitive user experience.
-
-![Elegant Hash Generator Screenshot](./screenshot.png)
 
 ---
 
