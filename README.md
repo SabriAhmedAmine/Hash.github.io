@@ -36,5 +36,5 @@
 No server or setup needed. Just clone and open the HTML file in your browser.
 
 ```bash
-git clone https://github.com/your-username/elegant-hash-generator.git
+git clone https://github.com/SabriAhmedAmine/elegant-hash-generator.git
 cd elegant-hash-generator
